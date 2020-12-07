@@ -1,0 +1,312 @@
+<!--
+Assignment 6!
+This code is used to create a webpage that showcases Objected-Oriented Javascript.
+The webpage asks the user to enter 6 stats for his/her character. Some basic user-input validation is applied to these 6 stats. Next, the user 
+clicks the button labeled "Generate Character!", which creates an object of the Character class (which is really just a variable holding
+an instance of a function). This same user input is then used to create objects of the Paladin and Necromancer class, which are subclasses
+of the Character superclass. All of this information is displayed on the webpage as well as 2 additional buttons that call
+the Paladin's lay_on_hands() function and the Necromancer's summon_zombie() function. These functions output text in alert boxes.
+
+All classes/function prototypes can be found in CharacterClasses.js. 
+
+
+author: Charles Quigley
+version: 1.0
+due date: 22 November, 2020.
+
+-->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+<!--Use the external javascript code containing the Character, Paladin, and Necromancer classes/function prototypes. -->
+<script language = "javascript" src = "CharacterClasses.js"></script> 
+</head>
+
+<body style = "background-color:HoneyDew">
+
+<!--Display Character info as well as number boxes for user-input for the Character.-->
+<h1 style = "font-family:Fantasy">Character</h1>
+
+<!--All of the paragraph id's that contain the word "Error" in them are used to display text indicating an error occurred if the user enters invalid input.-->
+<p id ="StrengthError" style = "color:red"></p>
+<p><b>Enter Your Character's Strength (-100, 100): &nbsp&nbsp&nbsp&nbsp&nbsp  </b> <input type = "number" id = "strengthTxt" min ="-100" max ="100"></p>
+<p id ="DexterityError" style = "color:red"></p>
+<p><b>Enter Your Character's Dexterity (-100, 100): &nbsp&nbsp&nbsp&nbsp    </b> <input type = "number" id = "dexterityTxt" min ="-100" max ="100"></p>
+<p id ="ConstitutionError" style = "color:red"></p>
+<p><b>Enter Your Character's Constitution (-100, 100):</b> <input type = "number" id = "constitutionTxt" min ="-100" max ="100"></p>
+<p id ="IntelligenceError" style = "color:red"></p>
+<p><b>Enter Your Character's Intelligence (-100, 100):&nbsp&nbsp </b> <input type = "number" id = "intelligenceTxt" min ="-100" max ="100"></p>
+<p id ="WisdomError" style = "color:red"></p>
+<p><b>Enter Your Character's Wisdom(-100, 100): &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp  </b> <input type = "number" id = "wisdomTxt" min ="-100" max ="100"> </p>
+<p id ="CharismaError" style = "color:red"></p>
+<p><b>Enter Your Character's Charisma (-100, 100): &nbsp&nbsp&nbsp </b> <input type = "number" id = "charismaTxt" min ="-100" max ="100"> </p>
+
+<!--Pressing the button calls functions that check the user input and creates the new Character "object" if the user input is valid.-->
+<p><input type = "button" value = "Generate Character!" onclick = "createCharacter()"></p>
+
+<!--Upon pressing the "Generate Character!" button, all 6 stats will be displayed to the screen as well as the total value of the stats added together-->
+<p id="CharacterStats"></p>
+<p id ="TotalStats"></p>
+
+
+<p id = "Roles" style = "visibility:hidden"><br />A Paladin and Necromancer Will Now Be Created Using Your Character's Stats...</p>
+
+<!--A Paladin object is also created that inherits from the Character class using the same user inputs for stats-->
+<!--The stats and total value of the stats added together are also diaplyed to the web page.-->
+<!--A button labeled "Call Paladin's lay_on_hands()!" is also displayed on the webpage that allows the user to call the Paladin's lay_on_hands() function.
+    This function will display an alert box. -->
+<h1 id = "PaladinHeader" style = "visibility:hidden" style = "font-family:Fantasy">Paladin</h1>
+<p id = "PaladinStats"></p>
+<p id = "TotalPaladinStats"></p>
+<p id = "PaladinButton" style = "visibility:hidden"><input type = "button" value = "Call Paladin's lay_on_hands()!" onclick = "callLayOnHands()"></p>
+
+<!--A Necromancer object is also created that inherits from the Character class using the same user inputs for stats-->
+<!--The stats and total value of the stats added together are also diaplyed to the web page.-->
+<!--A button labeled "Call Necromancer's summon_zombie()!" is also displayed on the webpage that allows the user to call the Necromancer's summon_zombie() function.
+    This function will display an alert box. -->
+<h1 id = "NecromancerHeader" style = "visibility:hidden" style = "font-family:Fantasy">Necromancer</h1>
+<p id = "NecromancerStats"></p>
+<p id = "TotalNecromancerStats"></p>
+<p id = "NecromancerButton" style = "visibility:hidden"><input type = "button" value = "Call Necromancer's summon_zombie()!" onclick = "callSummonZombies()"></p>
+
+<script language = "javascript" type="text/javascript">
+	
+	//This function is called at the beginning of createCharacter() to ensure that
+    //every	paragraph that displays red error text is reset. This is so if a user enters erroneous input
+	//once, the error text is not permanently displayed for the rest of the time the user is using the html page. 
+	function clearErrorTexts()
+	{
+		document.getElementById("StrengthError").innerHTML = "";
+		document.getElementById("DexterityError").innerHTML = "";
+		document.getElementById("ConstitutionError").innerHTML = "";
+		document.getElementById("IntelligenceError").innerHTML = "";
+		document.getElementById("WisdomError").innerHTML = "";
+		document.getElementById("CharismaError").innerHTML = "";
+	}
+	
+	//This function validates user-input. Each stat can only be in the interval [-100,100].
+	//So, any less than -100 or anymore than 100 is considered an error. Also,
+	//if the user keeps a number box empty when clicking "Generate Character!", that is also
+	//considered an error.
+	//We return false when we discover an error. We return true if no error was discovered.
+	function checkInput(input)
+	{
+	    if(input.value < -100 || input.value > 100)
+		{
+			return false;
+		}
+		else if(input.value.length === 0)
+		{
+			return false;
+		}
+		
+		return true;
+		
+	}
+	
+	//This function calls checkInput() on each user-input for each stat. 
+	//If one or more user input errors are discovered,
+	//This function returns false. If no errors are discovered, this function 
+	//returns true.
+	function findErrors()
+	{
+	    var thereIsError = 0;
+		
+		if(checkInput(document.getElementById("strengthTxt")) === false)
+		{
+			//If an error is found, the error text is set and displayed to the webpage to let the user know.
+			document.getElementById("StrengthError").innerHTML = "Strength Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		else if(checkInput(document.getElementById("dexterityTxt")) === false)
+		{
+			document.getElementById("DexterityError").innerHTML = "Dexterity Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		else if(checkInput(document.getElementById("constitutionTxt")) === false)
+		{
+			document.getElementById("ConstitutionError").innerHTML = "Constitution Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		else if(checkInput(document.getElementById("intelligenceTxt")) === false)
+		{
+			document.getElementById("IntelligenceError").innerHTML = "Intelligence Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		else if(checkInput(document.getElementById("wisdomTxt")) === false)
+		{
+			document.getElementById("WisdomError").innerHTML = "Wisdom Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		else if(checkInput(document.getElementById("charismaTxt")) === false)
+		{
+			document.getElementById("CharismaError").innerHTML = "Charisma Value Must Be Between -100 And 100.";
+			thereIsError = 1;
+		}
+		
+		if(thereIsError === 0)
+		{
+			return true;
+		}
+		
+		//sets the paragraphs holding the paladin and necromancer stuff to invisible.
+		setInvisible();
+			
+		return false;
+	}
+	
+	//This function is called if errors are detected in the user input. Basically,
+	//when the html page is first opened, the paragraphs regarding Paladin and Necromancer stuff
+	//are set to "hidden" and thus are not displayed. When the user enters valid input and presses the
+	//"Generate Character!" button, these paragraphs are set to "visible". If the user, however, decides to 
+	//change the input for stats, and the newly inputted values are erroneous, this function
+	//sets the paragraphs regarding Paladin and Necromancer stuff to "hidden" again. This is because
+	//The Paladin and Necromancer stats displayed on the screen are the same as the character's.
+	//So, if the user enters erroneous input for the character, I do not want this erroneous data
+	//also being displayed for the Paladin and Necromancer. 
+	function setInvisible()
+	{
+	
+		document.getElementById("CharacterStats").innerHTML = "";
+		document.getElementById("TotalStats").innerHTML = "";
+		
+		document.getElementById("Roles").style.visibility = "hidden";
+		document.getElementById("PaladinHeader").style.visibility = "hidden";
+		document.getElementById("PaladinButton").style.visibility = "hidden";
+		document.getElementById("PaladinStats").innerHTML = "";
+		document.getElementById("TotalPaladinStats").innerHTML = "";
+		
+		document.getElementById("NecromancerHeader").style.visibility = "hidden";
+		document.getElementById("NecromancerButton").style.visibility = "hidden";
+		document.getElementById("NecromancerStats").innerHTML = "";
+		document.getElementById("TotalNecromancerStats").innerHTML = "";
+		
+	}
+	
+	//This function sets the paragraphs that hold the Paladin and Necromancer information to visible.
+	//This is done when the user has entered valid input for the Character's stats and the user clicks the
+	//"Generate Character!" button.
+	function setVisibile()
+	{
+		document.getElementById("Roles").style.visibility = "visible";
+		
+		document.getElementById("PaladinHeader").style.visibility = "visible";
+		document.getElementById("PaladinButton").style.visibility = "visible";
+			
+			
+		document.getElementById("NecromancerHeader").style.visibility = "visible";
+		document.getElementById("NecromancerButton").style.visibility = "visible";
+	}
+
+
+	//This function is called when the user clicks the "Generate Character!" button. This function error-checks user input
+	//for each stat. If the entered stats are all valid, then this function creates a new Character "object" with them.
+	//This function then displays data regarding the Paladin and Necromancer objects. 
+    function createCharacter()
+	{
+		//Clear any error texts that were previously on the screen.
+	    clearErrorTexts();
+		
+		//If no erroneous input was detected for stats, then create the Character object.
+		if(findErrors() === true)
+		{
+			var strengthVal = document.getElementById("strengthTxt").value;
+			var dexterityVal = document.getElementById("dexterityTxt").value;
+			var constitutionVal = document.getElementById("constitutionTxt").value;
+			var intelligenceVal = document.getElementById("intelligenceTxt").value;
+			var wisdomVal = document.getElementById("wisdomTxt").value;
+			var charismaVal = document.getElementById("charismaTxt").value;
+
+			//New Character object c1 is created.
+			var c1 = new Character(strengthVal, dexterityVal, constitutionVal, intelligenceVal, wisdomVal, charismaVal);
+			
+			//Display the character's stats and stat total on the html page.
+			document.getElementById("CharacterStats").innerHTML = c1.DisplayCharacter();
+			document.getElementById("TotalStats").innerHTML = "Total Stats = " + c1.getStatsTotal();
+			
+			//Set info regarding the Paladin and Necromancer to visible.
+			setVisibile();
+			
+			//Creates a Paladin object using the same stats that were used to create the Character object.
+			createPaladin(strengthVal, dexterityVal, constitutionVal, intelligenceVal, wisdomVal, charismaVal);
+			
+			//Create a Necromancer object using the same stats that were used to create the Character object.
+			createNecromancer(strengthVal, dexterityVal, constitutionVal, intelligenceVal, wisdomVal, charismaVal);
+			
+			
+			
+		}
+		
+
+	}
+	
+	//This function creates a Paladin object using the same stats that were used to create the Character object.
+	//This function is called at the end of createCharacter().
+	function createPaladin(strength, dexterity, constitution, intelligence, wisdom, charisma)
+	{
+		var strengthVal = strength;
+		var dexterityVal = dexterity;
+		var constitutionVal = constitution;
+		var intelligenceVal = intelligence;
+		var wisdomVal = wisdom;
+		var charismaVal = charisma;
+		
+		
+		//Create new Paladin object p1. 
+		var p1 = new Paladin(strengthVal, dexterityVal, constitutionVal, intelligenceVal, wisdomVal, charismaVal);
+		
+		//Display the paladin's stats and stat total to the html page. 
+		document.getElementById("PaladinStats").innerHTML = p1.DisplayCharacter();
+		document.getElementById("TotalPaladinStats").innerHTML = "Total Stats = " + p1.getStatsTotal();
+	
+	
+	
+	}
+	
+	//This function is called when the user clicks the "Call Paladin's lay_on_hands()!" button.
+	//Basically, a dummy Paladin object is created and its lay_on_hands() function is called,
+	//which displays an alert box to the screen. 
+	function callLayOnHands()
+	{
+	
+		var p2 = new Paladin(1,1,1,1,1,1);
+	    p2.lay_on_hands();
+	}
+	
+	//This function creates a Necromancer object using the same stats that were used to create the Character object.
+	//This function is called at the end of createCharacter().
+	function createNecromancer(strength, dexterity, constitution, intelligence, wisdom, charisma)
+	{
+		var strengthVal = strength;
+		var dexterityVal = dexterity;
+		var constitutionVal = constitution;
+		var intelligenceVal = intelligence;
+		var wisdomVal = wisdom;
+		var charismaVal = charisma;
+		
+		
+		//Create new Necromancer object n1
+		var n1 = new Necromancer(strengthVal, dexterityVal, constitutionVal, intelligenceVal, wisdomVal, charismaVal);
+		
+		//Display the Necromancer's stats and stat total to the html page. 
+		document.getElementById("NecromancerStats").innerHTML = n1.DisplayCharacter();
+		document.getElementById("TotalNecromancerStats").innerHTML = "Total Stats = " + n1.getStatsTotal();
+	}
+	
+	//This function is called when the user clicks the "Call Necromancer's summon_zombie()!" button.
+	//Basically, a dummy Necromancer object is created and its summon_zombie() function is called,
+	//which displays an alert box to the screen. 
+	function callSummonZombies()
+	{
+		
+		var n2 = new Necromancer(1,1,1,1,1,1);
+	    n2.summon_zombie();
+	}
+	
+
+</script>
+
+</body>
+</html>
